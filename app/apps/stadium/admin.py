@@ -3,6 +3,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from .models import Stadium, StadiumPhoto
+from .constants import StadiumStatus
 
 
 class StadiumPhotoInline(admin.TabularInline):
@@ -42,3 +43,6 @@ class StadiumAdmin(admin.ModelAdmin):
         return "-"
 
     location_link.short_description = _("Location")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).exclude(status=StadiumStatus.DELETED)
