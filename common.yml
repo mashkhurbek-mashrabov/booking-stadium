@@ -1,0 +1,31 @@
+version: "3.9"
+
+volumes:
+  static_data: {}
+  media_data: {}
+  postgres_data: {}
+
+networks:
+  tech_news_network: {}
+
+services:
+  web: &web
+    image: ${PROJECT_NAME}_web_img:latest
+    container_name: ${PROJECT_NAME}_web
+    platform: linux/x86_64
+    restart: always
+    volumes:
+      - static_data:/app/vol
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+    ports:
+      - ${PORT}:8031
+
+  db: &db
+    image: postgres:15-alpine3.18
+    container_name: ${PROJECT_NAME}_db
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data

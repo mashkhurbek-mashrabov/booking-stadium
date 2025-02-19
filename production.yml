@@ -1,0 +1,53 @@
+volumes:
+  static_data: { }
+  postgres_data: { }
+  postgres_data_backups: { }
+
+networks:
+  nginx-web-proxy:
+    external: true
+  booking_network:
+    external: true
+
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: ${PROJECT_NAME}_web_img:latest
+    container_name: ${PROJECT_NAME}_web
+    platform: linux/x86_64
+    restart: always
+    networks:
+      - nginx-web-proxy
+      - booking_network
+    volumes:
+      - static_data:/app/vol
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+    ports:
+      - ${PORT}:8031
+
+  db:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: ${PROJECT_NAME}_db_image:latest
+    container_name: ${PROJECT_NAME}_db
+    restart: always
+    networks:
+      - nginx-web-proxy
+      - booking_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_backups:/backups:z
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - ${DB_PORT}:5433
+    command: -p ${DB_PORT}

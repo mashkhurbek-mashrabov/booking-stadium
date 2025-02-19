@@ -130,11 +130,6 @@ STATIC_URL = 'static/'
 
 STATIC_ROOT = str(BASE_DIR.joinpath('vol', 'static'))
 
-ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
-
-if not os.path.exists(ASSETS_DIR):
-    os.makedirs(ASSETS_DIR)
-
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets')]
 
 MEDIA_URL = '/media/'
