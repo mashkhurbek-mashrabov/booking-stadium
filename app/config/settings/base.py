@@ -49,6 +49,7 @@ INSTALLED_APPS = [
 
     # local apps
     'common',
+    'account',
 ]
 
 MIDDLEWARE = [
@@ -142,3 +143,5 @@ MEDIA_ROOT = str(BASE_DIR.joinpath('vol', 'media'))
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = "account.User"
