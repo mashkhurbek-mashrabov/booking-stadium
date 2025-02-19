@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MaxLengthValidator
 from django.contrib.auth import get_user_model
 
+from common.utils import price_formatter
 from .constants import StadiumStatus
 from common.models.base import BaseModel
 from account.constants import UserRole
@@ -40,6 +41,14 @@ class Stadium(BaseModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def formatted_price(self):
+        if self.price_per_hour:
+            return price_formatter(self.price_per_hour)
+        return 0
+
+    formatted_price.fget.short_description = _('Price per hour')
 
 
 class StadiumPhoto(BaseModel):
