@@ -2,11 +2,11 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import action
-from django.db.models import Q
 from .models import Stadium, StadiumPhoto
 from .serializers import StadiumSerializer, StadiumPhotoSerializer
 from .permissions import IsOwnerOrAdmin
 from .constants import StadiumStatus
+from django.db.models.expressions import RawSQL
 
 
 class StadiumViewSet(viewsets.ModelViewSet):
@@ -16,13 +16,40 @@ class StadiumViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        queryset = Stadium.objects.all()
+
+        lat = self.request.query_params.get('lat')
+        lng = self.request.query_params.get('lng')
+
         if user.role == 'admin':
-            return Stadium.objects.all()
+            pass  # Admin sees all stadiums
         elif user.role == 'owner':
-            return Stadium.objects.filter(owner=user)
+            queryset = queryset.filter(owner=user)
         else:
-            # Regular users only see available stadiums
-            return Stadium.objects.filter(status=StadiumStatus.AVAILABLE)
+            queryset = queryset.filter(status=StadiumStatus.AVAILABLE)
+
+        if lat and lng:
+            try:
+                lat = float(lat)
+                lng = float(lng)
+                
+                distance_formula = """
+                    6371 * acos(
+                        cos(radians(%s)) * cos(radians(CAST(split_part(location, ',', 1) AS FLOAT))) *
+                        cos(radians(CAST(split_part(location, ',', 2) AS FLOAT)) - radians(%s)) +
+                        sin(radians(%s)) * sin(radians(CAST(split_part(location, ',', 1) AS FLOAT)))
+                    )
+                """
+                queryset = queryset.annotate(
+                    distance=RawSQL(
+                        distance_formula,
+                        params=[lat, lng, lat]
+                    )
+                ).order_by('distance')
+            except (ValueError, TypeError):
+                pass
+
+        return queryset
 
     @action(detail=True, methods=['post'])
     def upload_photos(self, request, pk=None):
