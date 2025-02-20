@@ -1,7 +1,10 @@
 import os
+import re
 import string
 from typing import Union
 from uuid import uuid4
+
+from django.core.exceptions import ValidationError
 
 
 def max_media_file_size_validator(value):
@@ -55,3 +58,26 @@ def generate_custom_uuid(letters_count=2, digits_count=6):
     letters = ''.join([char.upper() for char in str(uuid) if char in string.ascii_letters][:letters_count])
     digits = ''.join([char for char in str(uuid) if char.isdigit()][:digits_count])
     return f"{letters}{digits}"
+
+
+def is_email(email):
+    return re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', email)
+
+
+def is_phone_number(phone_number):
+    return re.fullmatch(r'\+998\d{9}$', phone_number)
+
+
+def is_email_or_phone_number(text):
+    if is_email(text):
+        return 'email'
+    elif is_phone_number(text):
+        return 'phone_number'
+    raise ValidationError({'email_phone_number': f'Invalid phone number or email: {text}'})
+
+def send_confirmation_email(email, code):
+    print(f"Code has been sent to {email}\nCode: {code}")
+
+
+def send_sms(phone_number, code):
+    print(f"Code has been sent to {phone_number}\nCode: {code}")
