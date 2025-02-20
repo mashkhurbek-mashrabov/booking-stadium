@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='redoc'),
     re_path(r'^api/swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('api/v1/account/', include('account.urls')),
+    path('api/v1/stadium/', include('stadium.urls')),
 ]
 
 if settings.DEBUG:
